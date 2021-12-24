@@ -42,11 +42,12 @@ extern "C"
         int dilation_h, int dilation_w,
         int groups);
 
-    void im2col_cpu(const float* data_im, const int channels,
-                    const int height, const int width, const int kernel_h, const int kernel_w,
-                    const int pad_h, const int pad_w, const int stride_h,
-                    const int stride_w, const int dilation_h, const int dilation_w,
-                    float* data_col);
+    void im2col_cpu(
+        const float* data_im, const int channels,
+        const int height, const int width, const int kernel_h, const int kernel_w,
+        const int pad_h, const int pad_w, const int stride_h,
+        const int stride_w, const int dilation_h, const int dilation_w,
+        float* data_col);
 }
 
 void printTensor(const Tensor4f* tensor)
@@ -439,11 +440,12 @@ void im2col_cpu_(const Dtype* data_im, const int channels,
 }
 
 
-void im2col_cpu(const float* data_im, const int channels,
-                const int height, const int width, const int kernel_h, const int kernel_w,
-                const int pad_h, const int pad_w, const int stride_h,
-                const int stride_w, const int dilation_h, const int dilation_w,
-                float* data_col)
+void im2col_cpu(
+    const float* data_im, const int channels,
+    const int height, const int width, const int kernel_h, const int kernel_w,
+    const int pad_h, const int pad_w, const int stride_h,
+    const int stride_w, const int dilation_h, const int dilation_w,
+    float* data_col)
 {
     im2col_cpu_(data_im, channels, height, width, kernel_h, kernel_w,
                 pad_h, pad_w, stride_h, stride_w, dilation_h, dilation_w, data_col);

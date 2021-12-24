@@ -108,7 +108,7 @@ if __name__ == '__main__':
         padding_h_begin=padding_h, padding_h_end=padding_h, 
         padding_w_begin=padding_w, padding_w_end=padding_w,
         dilation_h=dilation_h, dilation_w=dilation_w,
-        groups=groups)
+        groups=groups, mode='plain')
     print(time.time() - start_time)
     print(np.allclose(y_np, y_cpp, atol=1e-3))
     print(np.mean(np.abs(y_np - y_cpp)))
@@ -120,7 +120,7 @@ if __name__ == '__main__':
         padding_h_begin=padding_h, padding_h_end=padding_h, 
         padding_w_begin=padding_w, padding_w_end=padding_w,
         dilation_h=dilation_h, dilation_w=dilation_w,
-        groups=groups, version='im2col')
+        groups=groups, mode='im2col')
     print(time.time() - start_time)
     print(np.allclose(y_np, y_cpp, atol=1e-3))
     print(np.mean(np.abs(y_np - y_cpp)))
@@ -132,7 +132,7 @@ if __name__ == '__main__':
         padding_h_begin=padding_h, padding_h_end=padding_h, 
         padding_w_begin=padding_w, padding_w_end=padding_w,
         dilation_h=dilation_h, dilation_w=dilation_w,
-        groups=groups, version='im2col_v2')
+        groups=groups, mode='im2col_v2')
     print(time.time() - start_time)
     print(np.allclose(y_np, y_cpp, atol=1e-3))
     print(np.mean(np.abs(y_np - y_cpp)))

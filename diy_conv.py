@@ -173,12 +173,12 @@ def conv2d_with_stride_padding_dilation_groups(
         padding_h_begin=0, padding_h_end=0, 
         padding_w_begin=0, padding_w_end=0,
         dilation_h=1, dilation_w=1, groups=1,
-        version='raw'):
-    if version == 'raw':
+        mode='plain'):
+    if mode == 'plain':
         func = cpplib.conv2d_with_stride_padding_dilation_groups
-    elif version == 'im2col':
+    elif mode == 'im2col':
         func = cpplib.conv2d_with_stride_padding_dilation_groups_by_im2col
-    elif version == 'im2col_v2':
+    elif mode == 'im2col_v2':
         return _conv2d_by_im2col(
             x, weight, stride_h=stride_h, stride_w=stride_w, 
             padding_h_begin=padding_h_begin, padding_h_end=padding_h_end, 
