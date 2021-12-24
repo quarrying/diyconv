@@ -101,11 +101,13 @@ void conv2d_with_stride(
                     {
                         for (int kernel_h_index = 0; kernel_h_index < kernel_height; ++kernel_h_index)
                         {
+                            int input_h_index = kernel_h_index + output_h_index * stride_h;
                             for (int kernel_w_index = 0; kernel_w_index < kernel_width; ++kernel_w_index)
                             {
+                                int input_w_index = kernel_w_index + output_w_index * stride_w;
                                 int input_idx = 
-                                    (kernel_w_index + output_w_index * stride_w) +
-                                    (kernel_h_index + output_h_index * stride_h) * input_width + 
+                                    input_w_index +
+                                    input_h_index * input_width + 
                                     kernel_c_index * input_width * input_height;
                                 int kernel_idx = 
                                     kernel_w_index + 
