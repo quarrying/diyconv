@@ -10,24 +10,24 @@ typedef struct Tensor
 extern "C"
 {
     void conv2d_with_stride(
-        const Tensor4f* input, const Tensor4f* filter, Tensor4f* output, 
+        const Tensor4f* input, const Tensor4f* kernel, Tensor4f* output, 
         int stride_h, int stride_w);
 
     void conv2d_with_stride_padding(
-        const Tensor4f* input, const Tensor4f* filter, Tensor4f* output, 
+        const Tensor4f* input, const Tensor4f* kernel, Tensor4f* output, 
         int stride_h, int stride_w, 
         int padding_h_begin, int padding_h_end, 
         int padding_w_begin, int padding_w_end);
 
     void conv2d_with_stride_padding_dilation(
-        const Tensor4f* input, const Tensor4f* filter, Tensor4f* output, 
+        const Tensor4f* input, const Tensor4f* kernel, Tensor4f* output, 
         int stride_h, int stride_w, 
         int padding_h_begin, int padding_h_end, 
         int padding_w_begin, int padding_w_end,
         int dilation_h, int dilation_w);
 
     void conv2d_with_stride_padding_dilation_groups(
-        const Tensor4f* input, const Tensor4f* filter, Tensor4f* output, 
+        const Tensor4f* input, const Tensor4f* kernel, Tensor4f* output, 
         int stride_h, int stride_w, 
         int padding_h_begin, int padding_h_end, 
         int padding_w_begin, int padding_w_end,
@@ -35,7 +35,7 @@ extern "C"
         int groups);
         
     void conv2d_with_stride_padding_dilation_groups_by_im2col(
-        const Tensor4f* input, const Tensor4f* filter, Tensor4f* output, 
+        const Tensor4f* input, const Tensor4f* kernel, Tensor4f* output, 
         int stride_h, int stride_w, 
         int padding_h_begin, int padding_h_end, 
         int padding_w_begin, int padding_w_end,
@@ -57,31 +57,31 @@ void printTensor(const Tensor4f* tensor)
 
 
 // input:   (batch_size, in_channels, input_height, input_width)
-// filter:  (out_channels, in_channels, filter_height, filter_width)
+// kernel:  (out_channels, in_channels, kernel_height, kernel_width)
 // output:  (batch_size, out_channels, output_height, output_width)
 void conv2d_with_stride(
-    const Tensor4f* input, const Tensor4f* filter, Tensor4f* output, 
+    const Tensor4f* input, const Tensor4f* kernel, Tensor4f* output, 
     int stride_h, int stride_w)
 {
     assert (input->dims[0] == output->dims[0]);
-    assert (input->dims[1] == filter->dims[1]);
-    assert (filter->dims[0] == output->dims[1]);
+    assert (input->dims[1] == kernel->dims[1]);
+    assert (kernel->dims[0] == output->dims[1]);
     
     int batch_size = input->dims[0];
     int in_channels = input->dims[1];
     int input_height = input->dims[2];
     int input_width = input->dims[3];
     
-    int out_channels = filter->dims[0];
-    int filter_height = filter->dims[2];
-    int filter_width = filter->dims[3];
+    int out_channels = kernel->dims[0];
+    int kernel_height = kernel->dims[2];
+    int kernel_width = kernel->dims[3];
     
     int output_height = output->dims[2];
     int output_width = output->dims[3];
     
     int input_numel = in_channels * input_height * input_width;
     int output_numel = out_channels * output_height * output_width;
-    int filter_numel = in_channels * filter_height * filter_width;
+    int kernel_numel = in_channels * kernel_height * kernel_width;
     for (int batch_index = 0; batch_index < batch_size; ++batch_index)
     {
         int input_offset = batch_index * input_numel;
@@ -90,28 +90,28 @@ void conv2d_with_stride(
         float* output_ptr = output->data + output_offset;
         for (int output_c_index = 0; output_c_index < out_channels; ++output_c_index)
         {
-            int filter_offset = output_c_index * filter_numel;
-            const float* filter_ptr = filter->data + filter_offset;
+            int kernel_offset = output_c_index * kernel_numel;
+            const float* kernel_ptr = kernel->data + kernel_offset;
             for (int output_h_index = 0; output_h_index < output_height; ++output_h_index)
             {
                 for (int output_w_index = 0; output_w_index < output_width; ++output_w_index)
                 {
                     float val = 0.0f;
-                    for (int filter_c_index = 0; filter_c_index < in_channels; ++filter_c_index)
+                    for (int kernel_c_index = 0; kernel_c_index < in_channels; ++kernel_c_index)
                     {
-                        for (int filter_h_index = 0; filter_h_index < filter_height; ++filter_h_index)
+                        for (int kernel_h_index = 0; kernel_h_index < kernel_height; ++kernel_h_index)
                         {
-                            for (int filter_w_index = 0; filter_w_index < filter_width; ++filter_w_index)
+                            for (int kernel_w_index = 0; kernel_w_index < kernel_width; ++kernel_w_index)
                             {
                                 int input_idx = 
-                                    (filter_w_index + output_w_index * stride_w) +
-                                    (filter_h_index + output_h_index * stride_h) * input_width + 
-                                    filter_c_index * input_width * input_height;
-                                int filter_idx = 
-                                    filter_w_index + 
-                                    filter_h_index * filter_width + 
-                                    filter_c_index * filter_width * filter_height;
-                                val += input_ptr[input_idx] * filter_ptr[filter_idx];
+                                    (kernel_w_index + output_w_index * stride_w) +
+                                    (kernel_h_index + output_h_index * stride_h) * input_width + 
+                                    kernel_c_index * input_width * input_height;
+                                int kernel_idx = 
+                                    kernel_w_index + 
+                                    kernel_h_index * kernel_width + 
+                                    kernel_c_index * kernel_width * kernel_height;
+                                val += input_ptr[input_idx] * kernel_ptr[kernel_idx];
                             }
                         }
                     }
@@ -128,33 +128,33 @@ void conv2d_with_stride(
 
 
 // input:   (batch_size, in_channels, input_height, input_width)
-// filter:  (out_channels, in_channels, filter_height, filter_width)
+// kernel:  (out_channels, in_channels, kernel_height, kernel_width)
 // output:  (batch_size, out_channels, output_height, output_width)
 void conv2d_with_stride_padding(
-    const Tensor4f* input, const Tensor4f* filter, Tensor4f* output, 
+    const Tensor4f* input, const Tensor4f* kernel, Tensor4f* output, 
     int stride_h, int stride_w, 
     int padding_h_begin, int padding_h_end, 
     int padding_w_begin, int padding_w_end)
 {
     assert (input->dims[0] == output->dims[0]);
-    assert (input->dims[1] == filter->dims[1]);
-    assert (filter->dims[0] == output->dims[1]);
+    assert (input->dims[1] == kernel->dims[1]);
+    assert (kernel->dims[0] == output->dims[1]);
     
     int batch_size = input->dims[0];
     int in_channels = input->dims[1];
     int input_height = input->dims[2];
     int input_width = input->dims[3];
     
-    int out_channels = filter->dims[0];
-    int filter_height = filter->dims[2];
-    int filter_width = filter->dims[3];
+    int out_channels = kernel->dims[0];
+    int kernel_height = kernel->dims[2];
+    int kernel_width = kernel->dims[3];
     
     int output_height = output->dims[2];
     int output_width = output->dims[3];
     
     int input_numel = in_channels * input_height * input_width;
     int output_numel = out_channels * output_height * output_width;
-    int filter_numel = in_channels * filter_height * filter_width;
+    int kernel_numel = in_channels * kernel_height * kernel_width;
     for (int batch_index = 0; batch_index < batch_size; ++batch_index)
     {
         int input_offset = batch_index * input_numel;
@@ -163,25 +163,25 @@ void conv2d_with_stride_padding(
         float* output_ptr = output->data + output_offset;
         for (int output_c_index = 0; output_c_index < out_channels; ++output_c_index)
         {
-            int filter_offset = output_c_index * filter_numel;
-            const float* filter_ptr = filter->data + filter_offset;
+            int kernel_offset = output_c_index * kernel_numel;
+            const float* kernel_ptr = kernel->data + kernel_offset;
             for (int output_h_index = 0; output_h_index < output_height; ++output_h_index)
             {
                 for (int output_w_index = 0; output_w_index < output_width; ++output_w_index)
                 {
                     float val = 0.0f;
-                    for (int filter_c_index = 0; filter_c_index < in_channels; ++filter_c_index)
+                    for (int kernel_c_index = 0; kernel_c_index < in_channels; ++kernel_c_index)
                     {
-                        for (int filter_h_index = 0; filter_h_index < filter_height; ++filter_h_index)
+                        for (int kernel_h_index = 0; kernel_h_index < kernel_height; ++kernel_h_index)
                         {
-                            int input_h_index = filter_h_index + output_h_index * stride_h - padding_h_begin;
+                            int input_h_index = kernel_h_index + output_h_index * stride_h - padding_h_begin;
                             if ((input_h_index < 0) || (input_h_index >= input_height))
                             {
                                 continue;
                             }
-                            for (int filter_w_index = 0; filter_w_index < filter_width; ++filter_w_index)
+                            for (int kernel_w_index = 0; kernel_w_index < kernel_width; ++kernel_w_index)
                             {
-                                int input_w_index = filter_w_index + output_w_index * stride_w - padding_w_begin;
+                                int input_w_index = kernel_w_index + output_w_index * stride_w - padding_w_begin;
                                 if ((input_w_index < 0) || (input_w_index >= input_width))
                                 {
                                     continue;
@@ -189,12 +189,12 @@ void conv2d_with_stride_padding(
                                 int input_idx = 
                                     input_w_index +
                                     input_h_index * input_width + 
-                                    filter_c_index * input_width * input_height;
-                                int filter_idx = 
-                                    filter_w_index + 
-                                    filter_h_index * filter_width + 
-                                    filter_c_index * filter_width * filter_height;
-                                val += input_ptr[input_idx] * filter_ptr[filter_idx];
+                                    kernel_c_index * input_width * input_height;
+                                int kernel_idx = 
+                                    kernel_w_index + 
+                                    kernel_h_index * kernel_width + 
+                                    kernel_c_index * kernel_width * kernel_height;
+                                val += input_ptr[input_idx] * kernel_ptr[kernel_idx];
                             }
                         }
                     }
@@ -211,34 +211,34 @@ void conv2d_with_stride_padding(
 
 
 // input:   (batch_size, in_channels, input_height, input_width)
-// filter:  (out_channels, in_channels, filter_height, filter_width)
+// kernel:  (out_channels, in_channels, kernel_height, kernel_width)
 // output:  (batch_size, out_channels, output_height, output_width)
 void conv2d_with_stride_padding_dilation(
-    const Tensor4f* input, const Tensor4f* filter, Tensor4f* output, 
+    const Tensor4f* input, const Tensor4f* kernel, Tensor4f* output, 
     int stride_h, int stride_w, 
     int padding_h_begin, int padding_h_end, 
     int padding_w_begin, int padding_w_end,
     int dilation_h, int dilation_w)
 {
     assert (input->dims[0] == output->dims[0]);
-    assert (input->dims[1] == filter->dims[1]);
-    assert (filter->dims[0] == output->dims[1]);
+    assert (input->dims[1] == kernel->dims[1]);
+    assert (kernel->dims[0] == output->dims[1]);
     
     int batch_size = input->dims[0];
     int in_channels = input->dims[1];
     int input_height = input->dims[2];
     int input_width = input->dims[3];
     
-    int out_channels = filter->dims[0];
-    int filter_height = filter->dims[2];
-    int filter_width = filter->dims[3];
+    int out_channels = kernel->dims[0];
+    int kernel_height = kernel->dims[2];
+    int kernel_width = kernel->dims[3];
     
     int output_height = output->dims[2];
     int output_width = output->dims[3];
     
     int input_numel = in_channels * input_height * input_width;
     int output_numel = out_channels * output_height * output_width;
-    int filter_numel = in_channels * filter_height * filter_width;
+    int kernel_numel = in_channels * kernel_height * kernel_width;
     for (int batch_index = 0; batch_index < batch_size; ++batch_index)
     {
         int input_offset = batch_index * input_numel;
@@ -247,25 +247,25 @@ void conv2d_with_stride_padding_dilation(
         float* output_ptr = output->data + output_offset;
         for (int output_c_index = 0; output_c_index < out_channels; ++output_c_index)
         {
-            int filter_offset = output_c_index * filter_numel;
-            const float* filter_ptr = filter->data + filter_offset;
+            int kernel_offset = output_c_index * kernel_numel;
+            const float* kernel_ptr = kernel->data + kernel_offset;
             for (int output_h_index = 0; output_h_index < output_height; ++output_h_index)
             {
                 for (int output_w_index = 0; output_w_index < output_width; ++output_w_index)
                 {
                     float val = 0.0f;
-                    for (int filter_c_index = 0; filter_c_index < in_channels; ++filter_c_index)
+                    for (int kernel_c_index = 0; kernel_c_index < in_channels; ++kernel_c_index)
                     {
-                        for (int filter_h_index = 0; filter_h_index < filter_height; ++filter_h_index)
+                        for (int kernel_h_index = 0; kernel_h_index < kernel_height; ++kernel_h_index)
                         {
-                            int input_h_index = filter_h_index * dilation_h + output_h_index * stride_h - padding_h_begin;
+                            int input_h_index = kernel_h_index * dilation_h + output_h_index * stride_h - padding_h_begin;
                             if ((input_h_index < 0) || (input_h_index >= input_height))
                             {
                                 continue;
                             }
-                            for (int filter_w_index = 0; filter_w_index < filter_width; ++filter_w_index)
+                            for (int kernel_w_index = 0; kernel_w_index < kernel_width; ++kernel_w_index)
                             {
-                                int input_w_index = filter_w_index * dilation_w + output_w_index * stride_w - padding_w_begin;
+                                int input_w_index = kernel_w_index * dilation_w + output_w_index * stride_w - padding_w_begin;
                                 if ((input_w_index < 0) || (input_w_index >= input_width))
                                 {
                                     continue;
@@ -273,12 +273,12 @@ void conv2d_with_stride_padding_dilation(
                                 int input_idx = 
                                     input_w_index +
                                     input_h_index * input_width + 
-                                    filter_c_index * input_width * input_height;
-                                int filter_idx = 
-                                    filter_w_index + 
-                                    filter_h_index * filter_width + 
-                                    filter_c_index * filter_width * filter_height;
-                                val += input_ptr[input_idx] * filter_ptr[filter_idx];
+                                    kernel_c_index * input_width * input_height;
+                                int kernel_idx = 
+                                    kernel_w_index + 
+                                    kernel_h_index * kernel_width + 
+                                    kernel_c_index * kernel_width * kernel_height;
+                                val += input_ptr[input_idx] * kernel_ptr[kernel_idx];
                             }
                         }
                     }
@@ -294,10 +294,10 @@ void conv2d_with_stride_padding_dilation(
 }
 
 // input:   (batch_size, in_channels, input_height, input_width)
-// filter:  (out_channels, in_channels // groups, filter_height, filter_width)
+// kernel:  (out_channels, in_channels // groups, kernel_height, kernel_width)
 // output:  (batch_size, out_channels, output_height, output_width)
 void conv2d_with_stride_padding_dilation_groups(
-    const Tensor4f* input, const Tensor4f* filter, Tensor4f* output, 
+    const Tensor4f* input, const Tensor4f* kernel, Tensor4f* output, 
     int stride_h, int stride_w, 
     int padding_h_begin, int padding_h_end, 
     int padding_w_begin, int padding_w_end,
@@ -305,17 +305,17 @@ void conv2d_with_stride_padding_dilation_groups(
     int groups)
 {
     assert (input->dims[0] == output->dims[0]);
-    assert (input->dims[1] / groups == filter->dims[1]);
-    assert (filter->dims[0] == output->dims[1]);
+    assert (input->dims[1] / groups == kernel->dims[1]);
+    assert (kernel->dims[0] == output->dims[1]);
     
     int batch_size = input->dims[0];
     int in_channels = input->dims[1];
     int input_height = input->dims[2];
     int input_width = input->dims[3];
     
-    int out_channels = filter->dims[0];
-    int filter_height = filter->dims[2];
-    int filter_width = filter->dims[3];
+    int out_channels = kernel->dims[0];
+    int kernel_height = kernel->dims[2];
+    int kernel_width = kernel->dims[3];
     
     int output_height = output->dims[2];
     int output_width = output->dims[3];
@@ -328,7 +328,7 @@ void conv2d_with_stride_padding_dilation_groups(
 
     int input_numel = in_channels * input_height * input_width;
     int output_numel = out_channels * output_height * output_width;
-    int filter_numel = in_channels_per_group * filter_height * filter_width;
+    int kernel_numel = in_channels_per_group * kernel_height * kernel_width;
     for (int batch_index = 0; batch_index < batch_size; ++batch_index)
     {
         for (int group_index = 0; group_index < groups; ++group_index)
@@ -339,25 +339,25 @@ void conv2d_with_stride_padding_dilation_groups(
             float* output_ptr = output->data + output_offset;
             for (int output_c_index = 0; output_c_index < out_channels_per_group; ++output_c_index)
             {
-                int filter_offset = (output_c_index + group_index * out_channels_per_group) * filter_numel;
-                const float* filter_ptr = filter->data + filter_offset;
+                int kernel_offset = (output_c_index + group_index * out_channels_per_group) * kernel_numel;
+                const float* kernel_ptr = kernel->data + kernel_offset;
                 for (int output_h_index = 0; output_h_index < output_height; ++output_h_index)
                 {
                     for (int output_w_index = 0; output_w_index < output_width; ++output_w_index)
                     {
                         float val = 0.0f;
-                        for (int filter_c_index = 0; filter_c_index < in_channels_per_group; ++filter_c_index)
+                        for (int kernel_c_index = 0; kernel_c_index < in_channels_per_group; ++kernel_c_index)
                         {
-                            for (int filter_h_index = 0; filter_h_index < filter_height; ++filter_h_index)
+                            for (int kernel_h_index = 0; kernel_h_index < kernel_height; ++kernel_h_index)
                             {
-                                int input_h_index = filter_h_index * dilation_h + output_h_index * stride_h - padding_h_begin;
+                                int input_h_index = kernel_h_index * dilation_h + output_h_index * stride_h - padding_h_begin;
                                 if ((input_h_index < 0) || (input_h_index >= input_height))
                                 {
                                     continue;
                                 }
-                                for (int filter_w_index = 0; filter_w_index < filter_width; ++filter_w_index)
+                                for (int kernel_w_index = 0; kernel_w_index < kernel_width; ++kernel_w_index)
                                 {
-                                    int input_w_index = filter_w_index * dilation_w + output_w_index * stride_w - padding_w_begin;
+                                    int input_w_index = kernel_w_index * dilation_w + output_w_index * stride_w - padding_w_begin;
                                     if ((input_w_index < 0) || (input_w_index >= input_width))
                                     {
                                         continue;
@@ -365,12 +365,12 @@ void conv2d_with_stride_padding_dilation_groups(
                                     int input_idx = 
                                         input_w_index +
                                         input_h_index * input_width + 
-                                        filter_c_index * input_width * input_height;
-                                    int filter_idx = 
-                                        filter_w_index + 
-                                        filter_h_index * filter_width + 
-                                        filter_c_index * filter_width * filter_height;
-                                    val += input_ptr[input_idx] * filter_ptr[filter_idx];
+                                        kernel_c_index * input_width * input_height;
+                                    int kernel_idx = 
+                                        kernel_w_index + 
+                                        kernel_h_index * kernel_width + 
+                                        kernel_c_index * kernel_width * kernel_height;
+                                    val += input_ptr[input_idx] * kernel_ptr[kernel_idx];
                                 }
                             }
                         }
@@ -471,10 +471,10 @@ void matmul(const float* a, const float* b, float* c, int m, int n, int k)
 
 
 // input:   (batch_size, in_channels, input_height, input_width)
-// filter:  (out_channels, in_channels // groups, filter_height, filter_width)
+// kernel:  (out_channels, in_channels // groups, kernel_height, kernel_width)
 // output:  (batch_size, out_channels, output_height, output_width)
 void conv2d_with_stride_padding_dilation_groups_by_im2col(
-    const Tensor4f* input, const Tensor4f* filter, Tensor4f* output, 
+    const Tensor4f* input, const Tensor4f* kernel, Tensor4f* output, 
     int stride_h, int stride_w, 
     int padding_h_begin, int padding_h_end, 
     int padding_w_begin, int padding_w_end,
@@ -482,8 +482,8 @@ void conv2d_with_stride_padding_dilation_groups_by_im2col(
     int groups)
 {
     assert (input->dims[0] == output->dims[0]);
-    assert (input->dims[1] / groups == filter->dims[1]);
-    assert (filter->dims[0] == output->dims[1]);
+    assert (input->dims[1] / groups == kernel->dims[1]);
+    assert (kernel->dims[0] == output->dims[1]);
     assert (padding_h_begin == padding_h_end);
     assert (padding_w_begin == padding_w_end);
 
@@ -492,9 +492,9 @@ void conv2d_with_stride_padding_dilation_groups_by_im2col(
     int input_height = input->dims[2];
     int input_width = input->dims[3];
     
-    int out_channels = filter->dims[0];
-    int filter_height = filter->dims[2];
-    int filter_width = filter->dims[3];
+    int out_channels = kernel->dims[0];
+    int kernel_height = kernel->dims[2];
+    int kernel_width = kernel->dims[3];
     
     int output_height = output->dims[2];
     int output_width = output->dims[3];
@@ -507,30 +507,30 @@ void conv2d_with_stride_padding_dilation_groups_by_im2col(
 
     int input_numel = in_channels * input_height * input_width;
     int output_numel = out_channels * output_height * output_width;
-    int filter_numel = in_channels_per_group * filter_height * filter_width;
+    int kernel_numel = in_channels_per_group * kernel_height * kernel_width;
 
-    float* data_col = new float[in_channels_per_group * filter_height * filter_width * output_height * output_width];
+    float* data_col = new float[in_channels_per_group * kernel_height * kernel_width * output_height * output_width];
     for (int batch_index = 0; batch_index < batch_size; ++batch_index)
     {
         for (int group_index = 0; group_index < groups; ++group_index)
         {
             int input_offset = batch_index * input_numel + group_index * in_channels_per_group * input_height * input_width;
-            int filter_offset = group_index * out_channels_per_group * filter_numel;
+            int kernel_offset = group_index * out_channels_per_group * kernel_numel;
             int output_offset = batch_index * output_numel + group_index * out_channels_per_group * output_height * output_width;
             const float* input_ptr = input->data + input_offset;
-            const float* filter_ptr = filter->data + filter_offset;
+            const float* kernel_ptr = kernel->data + kernel_offset;
             float* output_ptr = output->data + output_offset;
 
             im2col_cpu(input_ptr, in_channels_per_group,
-                       input_height, input_width, filter_height, filter_width,
+                       input_height, input_width, kernel_height, kernel_width,
                        padding_h_begin, padding_w_begin, stride_h, stride_w, dilation_h, dilation_w, data_col);
 
-            // filter_ptr: (out_channels_per_group, in_channels_per_group * filter_height * filter_width)
-            // data_col: (in_channels_per_group * filter_height * filter_width, output_height * output_width)
+            // kernel_ptr: (out_channels_per_group, in_channels_per_group * kernel_height * kernel_width)
+            // data_col: (in_channels_per_group * kernel_height * kernel_width, output_height * output_width)
             // output_ptr: (out_channels_per_group, output_height * output_width)
-            matmul(filter_ptr, data_col, output_ptr, 
+            matmul(kernel_ptr, data_col, output_ptr, 
                    out_channels_per_group, 
-                   in_channels_per_group * filter_height * filter_width, 
+                   in_channels_per_group * kernel_height * kernel_width, 
                    output_height * output_width);
         }
     }

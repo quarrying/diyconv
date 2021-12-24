@@ -36,19 +36,18 @@ if __name__ == '__main__':
     dilation_w = np.random.choice([1, 2, 3])
 
     start_time = time.time()
-    y_np = conv2d_torch(x, weight, stride=(stride_h, stride_w))
+    y_torch = conv2d_torch(x, weight, stride=(stride_h, stride_w))
     print(time.time() - start_time)
     print("-------------------")
 
     start_time = time.time()
     y_cpp = conv2d_with_stride(x, weight, stride_h=stride_h, stride_w=stride_w)
     print(time.time() - start_time)
-    print(np.allclose(y_np, y_cpp, atol=1e-3))
-    print(np.mean(np.abs(y_np - y_cpp)))
+    print('Close: {}, MAE: {}'.format(np.allclose(y_torch, y_cpp, atol=1e-3), np.mean(np.abs(y_torch - y_cpp))))
     print("===================")
 
     start_time = time.time()
-    y_np = conv2d_torch(x, weight, stride=(stride_h, stride_w), padding=(padding_h, padding_w))
+    y_torch = conv2d_torch(x, weight, stride=(stride_h, stride_w), padding=(padding_h, padding_w))
     print(time.time() - start_time)
     print("-------------------")
 
@@ -57,12 +56,11 @@ if __name__ == '__main__':
                                        padding_h_begin=padding_h, padding_h_end=padding_h, 
                                        padding_w_begin=padding_w, padding_w_end=padding_w)
     print(time.time() - start_time)
-    print(np.allclose(y_np, y_cpp, atol=1e-3))
-    print(np.mean(np.abs(y_np - y_cpp)))
+    print('Close: {}, MAE: {}'.format(np.allclose(y_torch, y_cpp, atol=1e-3), np.mean(np.abs(y_torch - y_cpp))))
     print("===================")
 
     start_time = time.time()
-    y_np = conv2d_torch(x, weight, stride=(stride_h, stride_w), 
+    y_torch = conv2d_torch(x, weight, stride=(stride_h, stride_w), 
                         padding=(padding_h, padding_w), dilation=(dilation_h, dilation_w))
     print(time.time() - start_time)
     print("-------------------")
@@ -73,8 +71,7 @@ if __name__ == '__main__':
                                                 padding_w_begin=padding_w, padding_w_end=padding_w,
                                                 dilation_h=dilation_h, dilation_w=dilation_w)
     print(time.time() - start_time)
-    print(np.allclose(y_np, y_cpp, atol=1e-3))
-    print(np.mean(np.abs(y_np - y_cpp)))
+    print('Close: {}, MAE: {}'.format(np.allclose(y_torch, y_cpp, atol=1e-3), np.mean(np.abs(y_torch - y_cpp))))
     print("==================")
 
 
@@ -97,7 +94,7 @@ if __name__ == '__main__':
     dilation_w = np.random.choice([1, 2, 3])
     
     start_time = time.time()
-    y_np = conv2d_torch(x, weight, stride=(stride_h, stride_w), 
+    y_torch = conv2d_torch(x, weight, stride=(stride_h, stride_w), 
                         padding=(padding_h, padding_w), dilation=(dilation_h, dilation_w), groups=groups)
     print(time.time() - start_time)
     print("-------------------")
@@ -110,8 +107,7 @@ if __name__ == '__main__':
         dilation_h=dilation_h, dilation_w=dilation_w,
         groups=groups, mode='plain')
     print(time.time() - start_time)
-    print(np.allclose(y_np, y_cpp, atol=1e-3))
-    print(np.mean(np.abs(y_np - y_cpp)))
+    print('Close: {}, MAE: {}'.format(np.allclose(y_torch, y_cpp, atol=1e-3), np.mean(np.abs(y_torch - y_cpp))))
     print("-------------------")
 
     start_time = time.time()
@@ -122,8 +118,7 @@ if __name__ == '__main__':
         dilation_h=dilation_h, dilation_w=dilation_w,
         groups=groups, mode='im2col')
     print(time.time() - start_time)
-    print(np.allclose(y_np, y_cpp, atol=1e-3))
-    print(np.mean(np.abs(y_np - y_cpp)))
+    print('Close: {}, MAE: {}'.format(np.allclose(y_torch, y_cpp, atol=1e-3), np.mean(np.abs(y_torch - y_cpp))))
     print("-------------------")
 
     start_time = time.time()
@@ -134,5 +129,4 @@ if __name__ == '__main__':
         dilation_h=dilation_h, dilation_w=dilation_w,
         groups=groups, mode='im2col_v2')
     print(time.time() - start_time)
-    print(np.allclose(y_np, y_cpp, atol=1e-3))
-    print(np.mean(np.abs(y_np - y_cpp)))
+    print('Close: {}, MAE: {}'.format(np.allclose(y_torch, y_cpp, atol=1e-3), np.mean(np.abs(y_torch - y_cpp))))
