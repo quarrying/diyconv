@@ -1,5 +1,5 @@
 # Overview
-Implement convolution layer in CNN step by step for ease of understanding, regardless of efficiency.
+Implement convolution operator in CNN step by step for ease of understanding, regardless of efficiency.
 
 Currently including:
 - conv2d_with_stride
@@ -7,8 +7,8 @@ Currently including:
 - conv2d_with_stride_padding_dilation
 - conv2d_with_stride_padding_dilation_groups
     - `mode='plain'`: plain implementation.
-    - `mode='im2col'`: implementation using `im2col` borrowed from Caffe and `matmul` implemented by ourselves.
-    - `mode='im2col_v2'`: implementation using `im2col` borrowed from Caffe and `np.dot`.
+    - `mode='im2col'`: use `im2col` borrowed from Caffe and `matmul` implemented by ourselves.
+    - `mode='im2col_v2'`: use `im2col` borrowed from Caffe and `np.dot`.
 
 We also compare the results of our implementions with Pytorch's. 
 
