@@ -34,7 +34,7 @@ extern "C"
         int dilation_h, int dilation_w,
         int groups);
         
-    void conv2d_with_stride_padding_dilation_groups_im2col(
+    void conv2d_with_stride_padding_dilation_groups_by_im2col(
         const Tensor4f* input, const Tensor4f* filter, Tensor4f* output, 
         int stride_h, int stride_w, 
         int padding_h_begin, int padding_h_end, 
@@ -386,6 +386,7 @@ void conv2d_with_stride_padding_dilation_groups(
 }
 
 
+// Borrowed from Caffe
 // Function uses casting from int to unsigned to compare if value of
 // parameter a is greater or equal to zero and lower than value of
 // parameter b. The b parameter is of type signed and is always positive,
@@ -396,7 +397,8 @@ inline bool is_a_ge_zero_and_a_lt_b(int a, int b) {
   return static_cast<unsigned>(a) < static_cast<unsigned>(b);
 }
 
-// Copy from caffe, the same as original
+
+// Borrowed from Caffe
 template <typename Dtype>
 void im2col_cpu_(const Dtype* data_im, const int channels,
     const int height, const int width, const int kernel_h, const int kernel_w,
@@ -448,7 +450,7 @@ void im2col_cpu(const float* data_im, const int channels,
 }
 
 
-// Simplest matrix multiplication
+// Simplest matrix multiplication implementation
 void matmul(const float* a, const float* b, float* c, int m, int n, int k)
 {
     for (int i = 0; i < m; ++i)
@@ -469,7 +471,7 @@ void matmul(const float* a, const float* b, float* c, int m, int n, int k)
 // input:   (batch_size, in_channels, input_height, input_width)
 // filter:  (out_channels, in_channels // groups, filter_height, filter_width)
 // output:  (batch_size, out_channels, output_height, output_width)
-void conv2d_with_stride_padding_dilation_groups_im2col(
+void conv2d_with_stride_padding_dilation_groups_by_im2col(
     const Tensor4f* input, const Tensor4f* filter, Tensor4f* output, 
     int stride_h, int stride_w, 
     int padding_h_begin, int padding_h_end, 
